@@ -37,6 +37,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
+// DREAMENGINE: collision calibration pre-pass (opt-in; see dream_tile_collision_calibration.h).
+#include "scene/2d/dream_tile_collision_calibration.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/main/scene_tree.h"
@@ -935,6 +937,10 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 					Vector<Vector<Vector2>> out_polygons;
 					Vector<Vector<Vector2>> out_holes;
 					Geometry2D::merge_many_polygons(kvbody.value.polygons, out_polygons, out_holes);
+					// DREAMENGINE: apply calibration tolerances (min_polygon_area /
+					// merge_epsilon / corner_rounding) — a no-op unless a
+					// dream_engine/tile/* setting opts in.
+					DreamTileCollisionCalibration::calibrate(out_polygons, out_holes);
 					// Create shapes for each polygon.
 					int body_shape_index = 0;
 					Vector<Vector<Vector2>> convex_polygons = Geometry2D::decompose_many_polygons_in_convex(out_polygons, out_holes);

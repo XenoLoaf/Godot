@@ -233,4 +233,30 @@ TEST_CASE("[Color] Manipulation methods") {
 			"Red interpolated with yellow should be orange (with interpolated alpha).");
 }
 
+TEST_CASE("[Color] Oklab (DREAMENGINE)") {
+	// Pure red in Oklab has well-known approximate coordinates (~0.628, ~0.225, ~0.126).
+	const Vector3 red_lab = Color(1.0f, 0.0f, 0.0f).get_oklab();
+	CHECK_MESSAGE(red_lab.x == doctest::Approx(0.627955f), "red Oklab L should match reference.");
+	CHECK_MESSAGE(red_lab.y == doctest::Approx(0.224863f), "red Oklab a should match reference.");
+	CHECK_MESSAGE(red_lab.z == doctest::Approx(0.125846f), "red Oklab b should match reference.");
+
+	// Round-trip: sRGB -> Oklab -> sRGB recovers the source color.
+	const Color srgb = Color(0.35f, 0.5f, 0.6f);
+	const Vector3 lab = srgb.get_oklab();
+	const Color roundtrip = Color::from_oklab(lab.x, lab.y, lab.z);
+	CHECK_MESSAGE(
+			roundtrip.is_equal_approx(srgb),
+			"sRGB -> Oklab -> sRGB should round-trip to the original color.");
+
+	// Perceptual distance: identical colors are distance zero, and a near-identical
+	// color is much closer than an opponent color. Alpha is ignored.
+	CHECK_MESSAGE(
+			Color(1.0f, 0.0f, 0.0f).distance_to(Color(1.0f, 0.0f, 0.0f)) == doctest::Approx(0.0f),
+			"Perceptual distance from a color to itself should be zero.");
+	CHECK_MESSAGE(
+			Color(1.0f, 0.0f, 0.0f).distance_to(Color(0.95f, 0.0f, 0.0f)) <
+					Color(1.0f, 0.0f, 0.0f).distance_to(Color(0.0f, 1.0f, 0.0f)),
+			"A near-identical color should be perceptually closer than an opponent color.");
+}
+
 } // namespace TestColor

@@ -2430,6 +2430,10 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Color, srgb_to_linear, sarray(), varray());
 	bind_method(Color, linear_to_srgb, sarray(), varray());
 
+	// DREAMENGINE: Oklab perceptual space + distance (palette nearest-swatch seed).
+	bind_method(Color, get_oklab, sarray(), varray());
+	bind_method(Color, distance_to, sarray("to"), varray());
+
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
 
 	bind_static_method(Color, hex, sarray("hex"), varray());
@@ -2440,6 +2444,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
 	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
 	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
+	bind_static_method(Color, from_oklab, sarray("L", "a", "b", "alpha"), varray(1.0));
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
 	bind_static_method(Color, from_rgba8, sarray("r8", "g8", "b8", "a8"), varray(255));
 }

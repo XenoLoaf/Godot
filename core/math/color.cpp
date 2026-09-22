@@ -32,6 +32,7 @@
 
 #include "core/math/color_names.inc"
 #include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 
@@ -257,6 +258,32 @@ void Color::set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	g = c.g;
 	b = c.b;
 	a = c.a;
+}
+
+// DREAMENGINE: Oklab is a perceptually-uniform color space, exposed on Color to
+// back color distance / nearest-swatch matching (the fuzzy "B" mode of the tile
+// CategorySource and the DEPalette match() consumer). Additive; no layout change.
+// ok_color::Lab works in linear sRGB, so chain through Color's sRGB<->linear EOTF.
+Vector3 Color::get_oklab() const {
+	ok_color::RGB rgb = { srgb_to_linear().r, srgb_to_linear().g, srgb_to_linear().b };
+	ok_color::Lab lab = ok_color::linear_srgb_to_oklab(rgb);
+	return Vector3(lab.L, lab.a, lab.b);
+}
+
+void Color::set_oklab(float p_L, float p_a, float p_b, float p_alpha) {
+	ok_color::RGB rgb = ok_color::oklab_to_linear_srgb(ok_color::Lab{ p_L, p_a, p_b });
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha);
+	c = c.linear_to_srgb();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
+float Color::distance_to(const Color &p_to) const {
+	const Vector3 lab_self = get_oklab();
+	const Vector3 lab_to = p_to.get_oklab();
+	return (lab_self - lab_to).length();
 }
 
 bool Color::is_equal_approx(const Color &p_color) const {
@@ -492,6 +519,12 @@ Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 Color Color::from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha) {
 	Color c;
 	c.set_ok_hsv(p_h, p_s, p_l, p_alpha);
+	return c;
+}
+
+Color Color::from_oklab(float p_L, float p_a, float p_b, float p_alpha) {
+	Color c;
+	c.set_oklab(p_L, p_a, p_b, p_alpha);
 	return c;
 }
 

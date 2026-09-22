@@ -34,6 +34,7 @@
 #include "core/templates/hashfuncs.h"
 
 class String;
+class Vector3;
 
 struct [[nodiscard]] Color {
 	union {
@@ -64,6 +65,14 @@ struct [[nodiscard]] Color {
 	float get_ok_hsl_l() const;
 	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	void set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+
+	// DREAMENGINE: expose Oklab (a perceptual color space) on Color. Oklab is the
+	// perceptually-uniform space used for color distance / nearest-palette-swatch
+	// matching (the fuzzy "B" mode of the tile CategorySource and the DEPalette
+	// match() consumer). Additive — new members, no layout change.
+	Vector3 get_oklab() const;
+	void set_oklab(float p_L, float p_a, float p_b, float p_alpha = 1.0f);
+	float distance_to(const Color &p_to) const; // perceptual distance (Oklab), alpha ignored.
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -217,6 +226,8 @@ struct [[nodiscard]] Color {
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	// DREAMENGINE: Oklab constructors (perceptual space). See get_oklab().
+	static Color from_oklab(float p_L, float p_a, float p_b, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
 
